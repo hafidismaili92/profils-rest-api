@@ -1,7 +1,27 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import BaseUserManager
 # Create your models here.
+
+
+class UserProfileManager(BaseUserManager):
+    """manager for user profiles"""
+    
+    def create_user(self,email,name,password=None,isSuperUser=False):
+        """create bew user profil"""
+        if not email:
+            raise ValueError('user must have email Adress')
+
+        email = self.normalize_email(email)
+        user = self.model(email=email,name=name)
+        user.set_password(password)
+        if isSuperUser:
+            user.is_superuser=True
+            user.is_staff=True
+        user.save(using=self._db)
+
+        return user
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
@@ -11,7 +31,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_activate = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    #objects = UserProfileManager()
+    objects = UserProfileManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
