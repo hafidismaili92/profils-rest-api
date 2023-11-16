@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
+from rest_framework.permissions import IsAuthenticated
 
 
 
@@ -88,3 +89,16 @@ class UserProfilViewSet(viewsets.ModelViewSet):
 class UserLoginApiView(ObtainAuthToken):
     """handle creating user authentication tokens"""
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+class UserProfilFeedViewSet(viewsets.ModelViewSet):
+    """Handle creating and updating user feed items"""
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.userFeedSerializer
+    queryset = models.ProfileFeed.objects.all()
+    permission_classes = (
+        permissions.UpdateOwnStatus,
+        IsAuthenticated)
+    def perform_create(self, serializer):
+        """ Sets the user profile to the logged user"""
+        serializer.save(user_profile=self.request.user)
